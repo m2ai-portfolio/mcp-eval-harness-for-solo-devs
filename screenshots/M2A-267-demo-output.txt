@@ -1,0 +1,111 @@
+================================================================================
+FEATURE 5 DEMONSTRATION: REGRESSION DETECTION PIPELINE
+================================================================================
+
+Step 1: Comparing current test results against baseline...
+
+Regression detected: True
+Total issues found: 4
+
+Step 2: Generating regression report...
+
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Regression Report                                                            │
+│ REGRESSION DETECTED                                                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+ Total Issues  4 
+ Critical      1 
+ High          1 
+ Medium        1 
+ Low           1 
+
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Baseline vs Current                                                          │
+╰──────────────────────────────────────────────────────────────────────────────╯
+┏━━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━┓
+┃ Metric     ┃     Baseline ┃     Current ┃ Status ┃
+┡━━━━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━┩
+│ Pass Rate  │ 4/4 (100.0%) │ 3/4 (75.0%) │   ✗    │
+│ Total Cost │    $0.042000 │   $0.059000 │   ✗    │
+│ Duration   │        2.10s │       2.73s │   ✓    │
+│ Git Commit │      abc1234 │     def5678 │        │
+└────────────┴──────────────┴─────────────┴────────┘
+
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Regression Issues                                                            │
+╰──────────────────────────────────────────────────────────────────────────────╯
+┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┓
+┃ Severity ┃ Test                 ┃ Issue                 ┃ Baseline → Current ┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━┩
+│ CRITICAL │ test_file_operations │ Test was PASSING in   │        PASS → FAIL │
+│          │                      │ baseline but now      │                    │
+│          │                      │ FAILS                 │                    │
+│ HIGH     │ <suite>              │ Pass rate dropped     │     100.0% → 75.0% │
+│          │                      │ from 100.0% to 75.0%  │                    │
+│ MEDIUM   │ <suite>              │ Cost increased by     │  $0.0420 → $0.0590 │
+│          │                      │ 40.5%                 │                    │
+│ LOW      │ test_api_integration │ Latency increased by  │     650ms → 1250ms │
+│          │                      │ 92.3%                 │                    │
+└──────────┴──────────────────────┴───────────────────────┴────────────────────┘
+
+╭──────────────────────────────────────────────────────────────────────────────╮
+│ Recommendations                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+• Review failing tests and fix issues before merging
+• Check recent code changes for potential causes
+• Consider rolling back if critical functionality is broken
+
+
+Step 3: Text report (for CI/CD logs)...
+
+================================================================================
+REGRESSION REPORT
+================================================================================
+
+Status: REGRESSION DETECTED
+Total Issues: 4
+
+Baseline:
+  Suite: MCP Agent Test Suite
+  Commit: abc1234
+  Timestamp: 2026-03-20T15:56:03.099143+00:00
+  Pass Rate: 4/4 (100.0%)
+  Cost: $0.042000
+
+Current:
+  Suite: MCP Agent Test Suite
+  Commit: def5678
+  Timestamp: 2026-03-20T15:56:03.099180+00:00
+  Pass Rate: 3/4 (75.0%)
+  Cost: $0.059000
+
+Issues:
+
+  [CRITICAL]
+    - test_file_operations: Test was PASSING in baseline but now FAILS
+      Baseline: PASS -> Current: FAIL
+
+  [HIGH]
+    - <suite>: Pass rate dropped from 100.0% to 75.0%
+      Baseline: 100.0% -> Current: 75.0%
+
+  [MEDIUM]
+    - <suite>: Cost increased by 40.5%
+      Baseline: $0.0420 -> Current: $0.0590
+
+  [LOW]
+    - test_api_integration: Latency increased by 92.3%
+      Baseline: 650ms -> Current: 1250ms
+
+Recommendations:
+  - Review failing tests and fix issues before merging
+  - Check recent code changes for potential causes
+  - Consider rolling back if critical functionality is broken
+
+================================================================================
+
+CI/CD Exit Code: 1 (FAIL)
+
+================================================================================
+DEMONSTRATION COMPLETE
+================================================================================

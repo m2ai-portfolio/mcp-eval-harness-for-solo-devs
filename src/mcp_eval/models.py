@@ -99,6 +99,9 @@ class TestSuiteResult(BaseModel):
     total_duration: float
     total_cost: Optional[float] = None
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    git_commit: Optional[str] = None
+    baseline_commit: Optional[str] = None
+    regression_detected: bool = False
 
 
 class MCPServerConfig(BaseModel):
@@ -126,3 +129,5 @@ class MCPEvalConfig(BaseModel):
     default_timeout: int = 30
     servers: List[MCPServerConfig] = Field(default_factory=list)
     semantic_match: Optional[SemanticMatchConfig] = None
+    regression_thresholds: Dict[str, float] = Field(default_factory=dict)
+    baseline_strategy: str = "main_branch"  # "main_branch", "last_tag", "manual"

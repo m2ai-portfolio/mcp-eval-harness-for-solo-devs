@@ -4,6 +4,7 @@ import logging
 from .console import ConsoleReporter
 from .json import JSONExporter
 from .csv_export import CSVExporter
+from .regression import RegressionDetector, BaselineManager, RegressionIssue, RegressionCategory
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +49,10 @@ __all__ = [
     'ConsoleReporter',
     'JSONExporter',
     'CSVExporter',
+    'RegressionDetector',
+    'BaselineManager',
+    'RegressionIssue',
+    'RegressionCategory',
     'DEFAULT_COST_MODELS',
     'calculate_cost',
 ]

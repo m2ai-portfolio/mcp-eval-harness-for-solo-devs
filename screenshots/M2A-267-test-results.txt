@@ -1,0 +1,117 @@
+================================================================================
+FEATURE 5: REGRESSION DETECTION PIPELINE - TEST RESULTS
+================================================================================
+Issue: M2A-267
+Title: Feature 5: Regression Detection Pipeline - Store results and detect
+       regressions with CI/CD support
+Status: ✓ COMPLETE
+
+================================================================================
+IMPLEMENTATION SUMMARY
+================================================================================
+
+Files Created:
+  ✓ src/mcp_eval/reporting/regression.py      - RegressionDetector & BaselineManager
+
+Files Modified:
+  ✓ src/mcp_eval/models.py                    - Added git_commit, baseline_commit, regression_detected fields
+  ✓ src/mcp_eval/storage/sqlite.py            - Updated schema and save method
+  ✓ src/mcp_eval/reporting/console.py         - Added print_regression_report()
+  ✓ src/mcp_eval/reporting/__init__.py        - Export regression classes
+  ✓ src/mcp_eval/cli.py                       - Added baseline & regression commands
+
+================================================================================
+CORE FEATURES IMPLEMENTED
+================================================================================
+
+1. Git Integration
+   - Automatically captures git commit hash with test results
+   - Stores baseline and current commit for comparison
+   - Enables traceability across code changes
+
+2. Regression Detection
+   - Detects newly failing tests (CRITICAL severity)
+   - Monitors pass rate drops (HIGH severity)
+   - Tracks cost increases >20% (MEDIUM severity)
+   - Identifies latency increases >50% (LOW severity)
+   - Detects missing tests from baseline
+
+3. Baseline Management
+   - Save test results as named baselines
+   - List available baselines with metadata
+   - Retrieve appropriate baseline (latest, by tag, manual)
+   - Support multiple baseline strategies
+
+4. Rich Reporting
+   - Color-coded severity levels (Critical/High/Medium/Low)
+   - Side-by-side baseline vs current comparison
+   - Detailed issue breakdown with values
+   - Both Rich console and plain text formats
+
+5. CI/CD Integration
+   - `mcp-eval baseline save` - Save results as baseline
+   - `mcp-eval baseline list` - List available baselines
+   - `mcp-eval regression <current> <baseline>` - Compare runs
+   - `mcp-eval ci-run <path>` - Run tests and exit with CI code
+   - Exit code 0 = pass, 1 = regression detected
+
+================================================================================
+TEST RESULTS
+================================================================================
+
+Test 1: No regression detection
+  ✓ PASS - Baseline and current identical, no issues detected
+  Result: 0 issues found, has_regression=False
+
+Test 2: Regression - test starts failing
+  ✓ PASS - Detected 1 failing test, marked as CRITICAL
+  Result: 2 issues found (1 critical + 1 high), has_regression=True
+
+Test 3: CI exit code
+  ✓ PASS - Returns exit code 1 for regressions
+  Result: exit_code=1 (FAIL)
+
+Test 4: Regression report generation
+  ✓ PASS - Generated 978 character report
+  Result: Report contains "regression" and test names
+
+Test 5: Cost regression detection
+  ✓ PASS - Detected 400% cost increase
+  Result: Cost issue flagged as MEDIUM severity
+
+Test 6: Baseline save/load with SQLite
+  ✓ PASS - Saved and loaded baseline successfully
+  Result: Retrieved baseline with 2 tests
+
+================================================================================
+REGRESSION DETECTION DEMO OUTPUT
+================================================================================
+
+┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━┓
+┃ Severity ┃ Test                ┃ Issue                   ┃ Baseline→Current  ┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━┩
+│ CRITICAL │ test_file_ops       │ PASSING→FAILS           │ PASS → FAIL       │
+│ HIGH     │ <suite>             │ Pass rate dropped       │ 100.0% → 75.0%    │
+│ MEDIUM   │ <suite>             │ Cost increased by 40.5% │ $0.042 → $0.059   │
+│ LOW      │ test_api_integ      │ Latency +92.3%          │ 650ms → 1250ms    │
+└──────────┴─────────────────────┴─────────────────────────┴───────────────────┘
+
+Recommendations:
+  • Review failing tests and fix issues before merging
+  • Check recent code changes for potential causes
+  • Consider rolling back if critical functionality is broken
+
+CI/CD Exit Code: 1 (FAIL)
+
+================================================================================
+REGRESSION THRESHOLDS (Configurable)
+================================================================================
+
+pass_rate_drop: 0.0        - Any drop in pass rate triggers HIGH severity
+cost_increase_pct: 20.0    - >20% cost increase triggers MEDIUM severity
+latency_increase_pct: 50.0 - >50% latency increase triggers LOW severity
+new_failures: 0            - Any new failure triggers CRITICAL severity
+
+================================================================================
+ALL 6 TESTS PASSED - FEATURE 5 COMPLETE
+================================================================================

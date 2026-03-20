@@ -330,3 +330,158 @@ class ConsoleReporter:
             self.console.print("[yellow]Cost unchanged[/yellow]")
 
         self.console.print()
+
+    def print_regression_report(self, baseline: TestSuiteResult, current: TestSuiteResult, issues: List):
+        """
+        Print a formatted regression report using Rich.
+
+        Args:
+            baseline: Baseline test suite results
+            current: Current test suite results
+            issues: List of RegressionIssue objects
+        """
+        from .regression import RegressionCategory
+
+        # Determine if there's a critical regression
+        has_regression = any(
+            i.category in (RegressionCategory.CRITICAL, RegressionCategory.HIGH)
+            for i in issues
+        )
+
+        # Header panel
+        if has_regression:
+            header_style = "red"
+            status_text = "[bold red]REGRESSION DETECTED[/bold red]"
+        else:
+            header_style = "green"
+            status_text = "[bold green]NO CRITICAL REGRESSIONS[/bold green]"
+
+        self.console.print(Panel(
+            f"[bold cyan]Regression Report[/bold cyan]\n{status_text}",
+            border_style=header_style
+        ))
+
+        # Summary info
+        summary_table = Table(show_header=False, box=None)
+        summary_table.add_column("", style="bold")
+        summary_table.add_column("")
+
+        summary_table.add_row("Total Issues", str(len(issues)))
+        summary_table.add_row("Critical", str(sum(1 for i in issues if i.category == RegressionCategory.CRITICAL)))
+        summary_table.add_row("High", str(sum(1 for i in issues if i.category == RegressionCategory.HIGH)))
+        summary_table.add_row("Medium", str(sum(1 for i in issues if i.category == RegressionCategory.MEDIUM)))
+        summary_table.add_row("Low", str(sum(1 for i in issues if i.category == RegressionCategory.LOW)))
+
+        self.console.print(summary_table)
+        self.console.print()
+
+        # Baseline vs Current comparison
+        self.console.print(Panel("[bold cyan]Baseline vs Current[/bold cyan]", border_style="cyan"))
+
+        comparison_table = Table(show_header=True, header_style="bold cyan")
+        comparison_table.add_column("Metric", style="bold")
+        comparison_table.add_column("Baseline", justify="right")
+        comparison_table.add_column("Current", justify="right")
+        comparison_table.add_column("Status", justify="center")
+
+        # Pass rate
+        baseline_rate = baseline.passed / baseline.total_tests if baseline.total_tests > 0 else 0
+        current_rate = current.passed / current.total_tests if current.total_tests > 0 else 0
+        rate_status = "[green]✓[/green]" if current_rate >= baseline_rate else "[red]✗[/red]"
+
+        comparison_table.add_row(
+            "Pass Rate",
+            f"{baseline.passed}/{baseline.total_tests} ({baseline_rate:.1%})",
+            f"{current.passed}/{current.total_tests} ({current_rate:.1%})",
+            rate_status
+        )
+
+        # Cost
+        baseline_cost = baseline.total_cost or 0.0
+        current_cost = current.total_cost or 0.0
+        cost_status = "[green]✓[/green]" if current_cost <= baseline_cost * 1.2 else "[red]✗[/red]"
+
+        comparison_table.add_row(
+            "Total Cost",
+            f"${baseline_cost:.6f}",
+            f"${current_cost:.6f}",
+            cost_status
+        )
+
+        # Duration
+        duration_status = "[green]✓[/green]" if current.total_duration <= baseline.total_duration * 1.5 else "[yellow]⚠[/yellow]"
+
+        comparison_table.add_row(
+            "Duration",
+            f"{baseline.total_duration:.2f}s",
+            f"{current.total_duration:.2f}s",
+            duration_status
+        )
+
+        # Commits
+        comparison_table.add_row(
+            "Git Commit",
+            baseline.git_commit[:8] if baseline.git_commit else "unknown",
+            current.git_commit[:8] if current.git_commit else "unknown",
+            ""
+        )
+
+        self.console.print(comparison_table)
+        self.console.print()
+
+        # Issues table
+        if issues:
+            self.console.print(Panel("[bold cyan]Regression Issues[/bold cyan]", border_style="cyan"))
+
+            issues_table = Table(show_header=True, header_style="bold cyan")
+            issues_table.add_column("Severity", style="bold")
+            issues_table.add_column("Test")
+            issues_table.add_column("Issue")
+            issues_table.add_column("Baseline → Current", justify="right")
+
+            # Sort by severity
+            severity_order = {
+                RegressionCategory.CRITICAL: 0,
+                RegressionCategory.HIGH: 1,
+                RegressionCategory.MEDIUM: 2,
+                RegressionCategory.LOW: 3
+            }
+            sorted_issues = sorted(issues, key=lambda i: severity_order[i.category])
+
+            for issue in sorted_issues:
+                # Color code by severity
+                if issue.category == RegressionCategory.CRITICAL:
+                    severity_style = "[bold red]CRITICAL[/bold red]"
+                elif issue.category == RegressionCategory.HIGH:
+                    severity_style = "[red]HIGH[/red]"
+                elif issue.category == RegressionCategory.MEDIUM:
+                    severity_style = "[yellow]MEDIUM[/yellow]"
+                else:
+                    severity_style = "[dim]LOW[/dim]"
+
+                # Format values
+                if issue.baseline_value and issue.current_value:
+                    values = f"{issue.baseline_value} → {issue.current_value}"
+                else:
+                    values = "N/A"
+
+                issues_table.add_row(
+                    severity_style,
+                    issue.test_name,
+                    issue.description,
+                    values
+                )
+
+            self.console.print(issues_table)
+            self.console.print()
+
+        # Recommendations
+        self.console.print(Panel("[bold cyan]Recommendations[/bold cyan]", border_style="cyan"))
+        if has_regression:
+            self.console.print("[red]• Review failing tests and fix issues before merging[/red]")
+            self.console.print("[red]• Check recent code changes for potential causes[/red]")
+            self.console.print("[red]• Consider rolling back if critical functionality is broken[/red]")
+        else:
+            self.console.print("[green]• All checks passed, safe to proceed[/green]")
+
+        self.console.print()

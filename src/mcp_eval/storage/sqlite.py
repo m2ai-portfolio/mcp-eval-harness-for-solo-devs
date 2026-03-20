@@ -34,6 +34,8 @@ class SQLiteStore:
                     suite_name TEXT NOT NULL,
                     timestamp TEXT NOT NULL,
                     git_commit TEXT,
+                    baseline_commit TEXT,
+                    regression_detected INTEGER DEFAULT 0,
                     total_tests INTEGER NOT NULL,
                     passed INTEGER NOT NULL,
                     failed INTEGER NOT NULL,
@@ -72,13 +74,16 @@ class SQLiteStore:
 
             cursor.execute("""
                 INSERT INTO test_suites (
-                    suite_name, timestamp, total_tests, passed, failed,
-                    errors, skipped, total_duration, total_cost, data
+                    suite_name, timestamp, git_commit, baseline_commit, regression_detected,
+                    total_tests, passed, failed, errors, skipped, total_duration, total_cost, data
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 result.suite_name,
                 result.timestamp.isoformat(),
+                result.git_commit,
+                result.baseline_commit,
+                1 if result.regression_detected else 0,
                 result.total_tests,
                 result.passed,
                 result.failed,

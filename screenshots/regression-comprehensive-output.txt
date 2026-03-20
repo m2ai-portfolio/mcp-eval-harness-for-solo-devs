@@ -1,0 +1,43 @@
+================================================================================
+COMPREHENSIVE REGRESSION TEST
+================================================================================
+
+[Feature 2: MCP Protocol Test Execution]
+--------------------------------------------------------------------------------
+
+1. Testing MCPClient...
+   ✓ Mock connection established
+   ✓ Connection cleanup works
+
+2. Testing TestRunner...
+   ✓ Test executed: Integration Test
+   ✓ Status: passed
+   ✓ Execution time: 10ms
+   ✓ Token usage: 30 tokens
+   ✓ Estimated cost: $0.0015
+
+3. Testing Parallel Execution...
+   ✓ Executed 5 tests in parallel
+   ✓ Passed: 5/5
+   ✓ Total duration: 0.052s
+   ✓ Total cost: $0.0075
+
+[Feature 1: Test Case Parser - Regression Check]
+--------------------------------------------------------------------------------
+
+4. Testing Parser with basic prompt...
+   ✓ Parsed: Basic Prompt Test
+   ✓ Conversation turns: 1
+   ✓ Expectations: 1
+
+5. Testing Parser with multi-turn...
+   ✓ Parsed: Multi-turn Conversation Test
+   ✓ Multi-turn conversation: 4 turns
+
+6. Testing Validation with invalid YAML...
+   ✓ Validation correctly rejected invalid file
+   ✓ Error message: Error parsing /home/apexaipc/projects/yce-harness/generation...
+
+================================================================================
+REGRESSION TEST COMPLETE - ALL TESTS PASSED
+================================================================================

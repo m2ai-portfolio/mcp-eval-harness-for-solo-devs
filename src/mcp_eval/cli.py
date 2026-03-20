@@ -2,6 +2,7 @@
 
 import click
 import json
+import asyncio
 from pathlib import Path
 from rich.console import Console
 from rich.syntax import Syntax
@@ -11,6 +12,7 @@ from .parser import parse_test_case, parse_test_suite
 from .parser.yaml_validator import YAMLValidationError
 from .parser.markdown import MarkdownParseError
 from .config import load_config, ConfigError
+from .executor import MCPClient, TestRunner, ParallelExecutor
 
 console = Console()
 
@@ -159,6 +161,144 @@ def show_config(config: str):
         console.print(json.dumps(cfg.model_dump(), indent=2, default=str))
     except ConfigError as e:
         console.print(f"[red]✗ Config error:[/red] {str(e)}", style="bold")
+        raise click.Abort()
+
+
+@cli.command()
+@click.argument("path", type=click.Path(exists=True))
+@click.option("--config", "-c", default="./mcp-eval.yaml", help="Path to config file")
+@click.option("--parallel", "-p", is_flag=True, help="Run tests in parallel")
+@click.option("--parallel-limit", type=int, help="Override parallel test limit")
+@click.option("--timeout", type=int, help="Override default timeout (seconds)")
+@click.option("--output", "-o", help="Output directory for results")
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON")
+def run(path: str, config: str, parallel: bool, parallel_limit: int, timeout: int, output: str, output_json: bool):
+    """
+    Run tests against an MCP agent.
+
+    PATH: Path to test file or directory
+    """
+    try:
+        # Load configuration
+        cfg = load_config(config)
+
+        # Apply CLI overrides
+        if parallel_limit:
+            cfg.parallel_tests = parallel_limit
+        if timeout:
+            cfg.default_timeout = timeout
+        if output:
+            cfg.output_directory = output
+
+        # Collect test cases
+        test_path = Path(path)
+        test_cases = []
+
+        if test_path.is_file():
+            if test_path.suffix == ".md":
+                test_case = parse_test_case(str(test_path))
+                test_cases.append((test_case, str(test_path)))
+        elif test_path.is_dir():
+            md_files = list(test_path.glob("**/*.md"))
+            for md_file in md_files:
+                try:
+                    test_case = parse_test_case(str(md_file))
+                    test_cases.append((test_case, str(md_file)))
+                except (YAMLValidationError, MarkdownParseError) as e:
+                    console.print(f"[yellow]⚠ Skipping {md_file.name}: {str(e)}[/yellow]")
+
+        if not test_cases:
+            console.print("[yellow]No valid test cases found[/yellow]")
+            return
+
+        console.print(f"[cyan]Running {len(test_cases)} test(s)...[/cyan]\n")
+
+        # Create client in mock mode for now
+        client = MCPClient(cfg, mock_mode=True, mock_responses={
+            "default": {
+                "content": "This is a mock response from the agent.",
+                "tool_calls": [],
+                "resources": [],
+                "tokens": {"prompt": 15, "completion": 25, "total": 40}
+            }
+        })
+
+        # Run tests
+        if parallel and cfg.parallel_tests > 1:
+            runner = TestRunner(cfg, client)
+            executor = ParallelExecutor(cfg, runner)
+            result = asyncio.run(executor.execute_suite(test_cases))
+
+            if output_json:
+                console.print(json.dumps(result.model_dump(), indent=2, default=str))
+            else:
+                # Display results
+                console.print(Panel(f"[bold cyan]Test Suite Results[/bold cyan]"))
+
+                results_table = Table(show_header=True)
+                results_table.add_column("Test", style="cyan")
+                results_table.add_column("Status")
+                results_table.add_column("Duration", justify="right")
+                results_table.add_column("Cost", justify="right")
+
+                for test_result in result.test_results:
+                    status_color = "green" if test_result.status == "passed" else "red"
+                    duration = f"{test_result.execution_time:.2f}s"
+                    cost = f"${test_result.performance.estimated_cost_usd:.6f}" if test_result.performance else "N/A"
+
+                    results_table.add_row(
+                        test_result.test_name,
+                        f"[{status_color}]{test_result.status}[/{status_color}]",
+                        duration,
+                        cost
+                    )
+
+                console.print(results_table)
+                console.print(f"\n[bold]Summary:[/bold]")
+                console.print(f"  Total: {result.total_tests}")
+                console.print(f"  Passed: [green]{result.passed}[/green]")
+                console.print(f"  Failed: [red]{result.failed}[/red]")
+                console.print(f"  Errors: [red]{result.errors}[/red]")
+                console.print(f"  Duration: {result.total_duration:.2f}s")
+                if result.total_cost:
+                    console.print(f"  Total Cost: ${result.total_cost:.6f}")
+        else:
+            # Run sequentially
+            runner = TestRunner(cfg, client)
+            results = []
+
+            for test_case, test_path in test_cases:
+                console.print(f"[cyan]Running: {test_case.metadata.name}[/cyan]")
+                result = asyncio.run(runner.run_test_with_timeout(test_case, test_path=test_path))
+                results.append(result)
+
+                status_color = "green" if result.status == "passed" else "red"
+                console.print(f"  Status: [{status_color}]{result.status}[/{status_color}]")
+                if result.error_message:
+                    console.print(f"  Error: [red]{result.error_message}[/red]")
+                console.print()
+
+            # Summary
+            passed = sum(1 for r in results if r.status == "passed")
+            failed = sum(1 for r in results if r.status == "failed")
+            errors = sum(1 for r in results if r.status == "error")
+
+            console.print(f"\n[bold]Summary:[/bold]")
+            console.print(f"  Total: {len(results)}")
+            console.print(f"  Passed: [green]{passed}[/green]")
+            console.print(f"  Failed: [red]{failed}[/red]")
+            console.print(f"  Errors: [red]{errors}[/red]")
+
+    except (YAMLValidationError, MarkdownParseError) as e:
+        console.print(f"[red]✗ Parse error:[/red] {str(e)}", style="bold")
+        raise click.Abort()
+    except ConfigError as e:
+        console.print(f"[red]✗ Config error:[/red] {str(e)}", style="bold")
+        raise click.Abort()
+    except Exception as e:
+        console.print(f"[red]✗ Unexpected error:[/red] {str(e)}", style="bold")
+        import traceback
+        console.print(traceback.format_exc())
         raise click.Abort()
 
 

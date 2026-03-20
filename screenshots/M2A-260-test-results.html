@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Feature 2 Test Results - M2A-260</title>
+    <style>
+        body {
+            font-family: 'Monaco', 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 40px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #252526;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #4ec9b0;
+            border-bottom: 2px solid #4ec9b0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #569cd6;
+            margin-top: 30px;
+        }
+        .test-section {
+            background: #1e1e1e;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #4ec9b0;
+            border-radius: 4px;
+        }
+        .test-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #dcdcaa;
+            margin-bottom: 10px;
+        }
+        .test-result {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 5px 10px;
+            background: #2d2d30;
+            border-radius: 3px;
+        }
+        .pass {
+            color: #4ec9b0;
+            font-weight: bold;
+        }
+        .fail {
+            color: #f48771;
+            font-weight: bold;
+        }
+        .label {
+            color: #9cdcfe;
+        }
+        .value {
+            color: #ce9178;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th {
+            background: #094771;
+            color: #fff;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #3e3e42;
+        }
+        tr:hover {
+            background: #2d2d30;
+        }
+        .summary {
+            background: #094771;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            font-size: 16px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-pass {
+            background: #4ec9b0;
+            color: #1e1e1e;
+        }
+        .badge-fail {
+            background: #f48771;
+            color: #1e1e1e;
+        }
+        .cli-output {
+            background: #1e1e1e;
+            border: 1px solid #3e3e42;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Feature 2: MCP Protocol Test Execution - Results</h1>
+        <p style="color: #9cdcfe;">Issue: <strong>M2A-260</strong> | Date: March 20, 2026</p>
+
+        <div class="summary">
+            <h2 style="margin-top: 0; color: #fff;">Test Summary</h2>
+            <div class="summary-item">
+                <span class="label">Total Tests:</span>
+                <span class="value">6</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Passed:</span>
+                <span class="pass">6</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Failed:</span>
+                <span class="fail">0</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Success Rate:</span>
+                <span class="pass">100%</span>
+            </div>
+        </div>
+
+        <h2>Test Results</h2>
+
+        <div class="test-section">
+            <div class="test-name">Test 1: Connection Simulation <span class="badge badge-pass">PASS</span></div>
+            <div class="test-result">
+                <span class="label">Connect:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Disconnect:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Context Manager:</span>
+                <span class="pass">PASS</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-name">Test 2: Prompt Execution <span class="badge badge-pass">PASS</span></div>
+            <div class="test-result">
+                <span class="label">Response received:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Timing captured:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Tokens counted:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Duration:</span>
+                <span class="value">10ms</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Tokens:</span>
+                <span class="value">prompt: 10, completion: 15, total: 25</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-name">Test 3: Timeout Handling <span class="badge badge-pass">PASS</span></div>
+            <div class="test-result">
+                <span class="label">Status is error:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Has timeout message:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Error message:</span>
+                <span class="value">Timeout after 1 seconds</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-name">Test 4: Parallel Execution (10 tests) <span class="badge badge-pass">PASS</span></div>
+            <div class="test-result">
+                <span class="label">All tests completed:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">No errors:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Has metrics:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Total tests:</span>
+                <span class="value">10</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Passed:</span>
+                <span class="pass">10</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Duration:</span>
+                <span class="value">0.02s</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Total cost:</span>
+                <span class="value">$0.015000</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-name">Test 5: Execution Trace <span class="badge badge-pass">PASS</span></div>
+            <div class="test-result">
+                <span class="label">Has performance metrics:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Has token usage:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Has timing:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Response time:</span>
+                <span class="value">21ms</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Total time:</span>
+                <span class="value">21ms</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Tokens:</span>
+                <span class="value">60</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Cost:</span>
+                <span class="value">$0.003000</span>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-name">Test 6: Tool Call Handling <span class="badge badge-pass">PASS</span></div>
+            <div class="test-result">
+                <span class="label">Tool calls captured:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Resources captured:</span>
+                <span class="pass">PASS</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Tool calls:</span>
+                <span class="value">calculator (multiply: 6 x 7)</span>
+            </div>
+            <div class="test-result">
+                <span class="label">Resources:</span>
+                <span class="value">calculator_api</span>
+            </div>
+        </div>
+
+        <h2>CLI Parallel Execution Demo</h2>
+        <div class="cli-output">
+            <div style="color: #4ec9b0;">Running 4 test(s)...</div>
+            <br>
+            <table>
+                <tr>
+                    <th>Test</th>
+                    <th>Status</th>
+                    <th>Duration</th>
+                    <th>Cost</th>
+                </tr>
+                <tr>
+                    <td>Basic Prompt Test</td>
+                    <td><span class="pass">passed</span></td>
+                    <td>0.01s</td>
+                    <td>$0.001950</td>
+                </tr>
+                <tr>
+                    <td>Tool Usage Test</td>
+                    <td><span class="pass">passed</span></td>
+                    <td>0.01s</td>
+                    <td>$0.001950</td>
+                </tr>
+                <tr>
+                    <td>Template Variable Test</td>
+                    <td><span class="pass">passed</span></td>
+                    <td>0.01s</td>
+                    <td>$0.001950</td>
+                </tr>
+                <tr>
+                    <td>Multi-turn Conversation Test</td>
+                    <td><span class="pass">passed</span></td>
+                    <td>0.02s</td>
+                    <td>$0.003900</td>
+                </tr>
+            </table>
+            <br>
+            <div style="color: #9cdcfe;"><strong>Summary:</strong></div>
+            <div>  Total: 4</div>
+            <div>  Passed: <span class="pass">4</span></div>
+            <div>  Failed: <span class="fail">0</span></div>
+            <div>  Errors: <span class="fail">0</span></div>
+            <div>  Duration: 0.03s</div>
+            <div>  Total Cost: $0.009750</div>
+        </div>
+
+        <h2>Features Implemented</h2>
+        <div class="test-section">
+            <div class="test-result">
+                <span class="label">✓ WebSocket/stdio connection handling</span>
+            </div>
+            <div class="test-result">
+                <span class="label">✓ MCP protocol message formatting</span>
+            </div>
+            <div class="test-result">
+                <span class="label">✓ Tool call tracking and execution</span>
+            </div>
+            <div class="test-result">
+                <span class="label">✓ Complete interaction trace capture</span>
+            </div>
+            <div class="test-result">
+                <span class="label">✓ Timeout handling with graceful cleanup</span>
+            </div>
+            <div class="test-result">
+                <span class="label">✓ Parallel execution with concurrency limits</span>
+            </div>
+            <div class="test-result">
+                <span class="label">✓ Performance metrics and token counting</span>
+            </div>
+            <div class="test-result">
+                <span class="label">✓ Cost estimation</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

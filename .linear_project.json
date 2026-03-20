@@ -1,0 +1,49 @@
+{
+  "initialized": true,
+  "created_at": "2026-03-20T14:22:13.201Z",
+  "project_id": "6b2040f3-84f3-475a-9815-912876281740",
+  "project_name": "MCP Eval Harness",
+  "project_slug": "15712fa11c54",
+  "team_id": "488a02b5-c546-4242-95fb-bf6caf038fa1",
+  "team_key": "M2A",
+  "team_name": "M2AI_Workspace",
+  "meta_issue_id": "M2A-268",
+  "total_issues": 5,
+  "issues": [
+    {
+      "id": "47665cff-2cb4-47a0-9a5c-375346271aa6",
+      "identifier": "M2A-259",
+      "title": "Feature 1: Markdown Test Case Definition - Parse and validate test cases with YAML frontmatter",
+      "priority": "High",
+      "state": "Todo"
+    },
+    {
+      "id": "0eb93713-6bd2-4015-9b5d-c58143809102",
+      "identifier": "M2A-260",
+      "title": "Feature 2: MCP Protocol Test Execution - Connect and execute tests against MCP servers",
+      "priority": "High",
+      "state": "Todo"
+    },
+    {
+      "id": "e4717b27-ed37-4b06-80aa-942b96edfcb9",
+      "identifier": "M2A-264",
+      "title": "Feature 3: Intelligent Result Comparison - Compare outputs with diff, regex, and semantic matching",
+      "priority": "High",
+      "state": "Todo"
+    },
+    {
+      "id": "e11c7ba0-d13b-4675-80e5-e262ed56c0dd",
+      "identifier": "M2A-266",
+      "title": "Feature 4: Cost and Performance Tracking - Track tokens, costs, latency, and success rates",
+      "priority": "High",
+      "state": "Todo"
+    },
+    {
+      "id": "25f6d93a-4e4d-4053-974f-ef69e33994c9",
+      "identifier": "M2A-267",
+      "title": "Feature 5: Regression Detection Pipeline - Store results and detect regressions with CI/CD support",
+      "priority": "High",
+      "state": "Todo"
+    }
+  ]
+}

@@ -1,0 +1,358 @@
+# MCP Eval Harness for Solo Devs - App Specification
+
+## Overview
+
+The MCP Eval Harness is an open-source CLI tool and MCP server that provides lightweight regression testing for agent workflows. It allows solo developers to define test cases as markdown files containing prompts and expected outcomes, run them against any MCP-compatible agent, and receive detailed diffs, cost breakdowns, and failure traces. The tool is specifically designed to integrate seamlessly into existing development workflows without requiring dedicated ML ops infrastructure or specialized evaluation expertise.
+
+This harness addresses the critical gap between manual spot-checking and enterprise-grade evaluation platforms. It provides the automation and confidence needed for continuous agent development while maintaining the simplicity and low overhead that solo developers require. The tool supports both one-off evaluation runs and continuous integration pipelines, making it easy to catch regressions before they impact production systems.
+
+**Problem Statement**: Autonomous agents break silently when prompts, tools, or models change. Solo developers lack lightweight eval frameworks that fit into their existing workflows—existing solutions assume dedicated ML engineers, custom benchmarks, and ongoing tuning bandwidth. Developers resort to manual spot-checks or avoid shipping agent updates due to regression fear, slowing iteration velocity.
+
+**Target Audience**: Solo AI developers building MCP servers or agent-based products who need regression detection without enterprise eval infrastructure; indie builders shipping coding agents, workflow automation, or client-facing AI tools who want confidence in updates.
+
+## Tech Stack
+
+- **Python 3.10+** - Core runtime with async/await support for MCP protocol
+- **Click** - CLI framework for command parsing and user interface
+- **asyncio** - Asynchronous execution for concurrent test runs
+- **pydantic** - Data validation and serialization for test cases and results
+- **pytest** - Test framework and fixture management
+- **aiohttp** - HTTP client for MCP server communication
+- **rich** - Terminal output formatting and progress indicators
+- **difflib** - Text comparison and diff generation
+- **yaml** - Configuration file parsing
+- **markdown** - Test case file parsing
+- **jsonschema** - MCP message validation
+- **sqlite3** - Local test history and caching
+
+## Environment Setup
+
+### Prerequisites
+- Python 3.10 or higher
+- Git (for test case versioning)
+- An MCP-compatible agent or server to test against
+
+### Configuration
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `MCP_EVAL_CONFIG_PATH` | No | Path to YAML config file (default: `./mcp-eval.yaml`) |
+| `MCP_EVAL_RESULTS_DIR` | No | Directory for test results (default: `./eval-results`) |
+| `MCP_EVAL_CACHE_DB` | No | SQLite database for caching (default: `./eval-cache.db`) |
+| `MCP_DEFAULT_TIMEOUT` | No | Default timeout for agent responses in seconds (default: 30) |
+| `MCP_EVAL_PARALLEL_LIMIT` | No | Maximum concurrent test executions (default: 5) |
+
+## Architecture
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Test Suite    │    │   CLI Runner     │    │  MCP Agent      │
+│  (Markdown)     │───▶│                  │───▶│  Under Test     │
+│                 │    │  ┌─────────────┐ │    │                 │
+│ • Prompts       │    │  │ Test Parser │ │    │ • Tools         │
+│ • Expectations  │    │  │ Executor    │ │    │ • Prompts       │
+│ • Metadata      │    │  │ Differ      │ │    │ • Resources     │
+└─────────────────┘    │  └─────────────┘ │    └─────────────────┘
+                       └──────────────────┘              │
+                                │                        │
+                                ▼                        │
+┌─────────────────┐    ┌──────────────────┐              │
+│  Results Store  │◀───│   MCP Server     │◀─────────────┘
+│                 │    │  (Optional)      │
+│ • Test History  │    │                  │
+│ • Diffs         │    │ • Serve Results  │
+│ • Cost Data     │    │ • Query History  │
+│ • Traces        │    │ • Export Data    │
+└─────────────────┘    └──────────────────┘
+```
+
+## Core Features
+
+### Feature 1: Markdown Test Case Definition
+**Description**: Allows developers to define test cases using a simple markdown format with YAML frontmatter for metadata and structured sections for prompts, expected outputs, and evaluation criteria.
+
+**Requirements**:
+- Parse markdown files with YAML frontmatter containing test metadata
+- Support multi-turn conversation definitions within markdown
+- Handle different expectation types: exact match, regex, semantic similarity
+- Validate test case structure and provide helpful error messages
+- Support test case inheritance and templating for common patterns
+
+**Test Steps**:
+1. Create `test.md` with valid frontmatter and prompt -> Parser extracts metadata correctly
+2. Define multi-turn conversation in markdown -> Parser creates conversation sequence
+3. Use invalid YAML frontmatter -> Parser shows clear validation error
+4. Reference template variables in prompt -> Template expansion works correctly
+
+### Feature 2: MCP Protocol Test Execution
+**Description**: Executes test cases against MCP-compatible agents by establishing protocol connections, sending prompts according to test definitions, and capturing full interaction traces including tool calls and resource access.
+
+**Requirements**:
+- Establish WebSocket or stdio connections to MCP servers
+- Send properly formatted MCP protocol messages
+- Handle tool calls, resource requests, and sampling requests during test execution
+- Capture complete interaction traces with timestamps and token counts
+- Support timeout handling and graceful connection cleanup
+- Execute tests in parallel with configurable concurrency limits
+
+**Test Steps**:
+1. Connect to MCP server via WebSocket -> Connection established successfully
+2. Send prompt with tool requirements -> Agent executes tools and returns response
+3. Run test with 1-second timeout -> Test fails gracefully with timeout error
+4. Execute 10 tests in parallel -> All tests complete without connection conflicts
+
+### Feature 3: Intelligent Result Comparison
+**Description**: Compares actual agent outputs against expected results using multiple comparison strategies including exact matching, regex patterns, semantic similarity, and custom evaluation functions.
+
+**Requirements**:
+- Generate unified diffs for text-based comparisons
+- Support regex pattern matching with named capture groups
+- Calculate semantic similarity scores using embedding models
+- Allow custom Python evaluation functions for complex criteria
+- Highlight specific differences in structured outputs (JSON, code blocks)
+- Provide confidence scores and reasoning for fuzzy matches
+
+**Test Steps**:
+1. Compare identical outputs -> Shows "PASS" with 100% confidence
+2. Compare with minor formatting differences -> Shows diff highlighting changes
+3. Use regex expectation `r'Hello, \w+'` against "Hello, World" -> Pattern matches successfully
+4. Compare semantically similar but lexically different responses -> Similarity score above threshold
+
+### Feature 4: Cost and Performance Tracking
+**Description**: Tracks and reports token usage, API costs, response times, and tool execution metrics across test runs, providing developers with insights into the efficiency implications of agent changes.
+
+**Requirements**:
+- Parse token usage from MCP protocol messages and API responses
+- Calculate estimated costs using configurable pricing models
+- Measure response latency and tool execution times
+- Track success/failure rates across test runs
+- Generate cost comparison reports between test runs
+- Export metrics data for external analysis tools
+
+**Test Steps**:
+1. Run test suite with GPT-4 -> Report shows token count and estimated cost
+2. Compare costs between two test runs -> Shows cost delta and efficiency changes
+3. Measure response times across 100 test executions -> Average latency reported
+4. Export metrics to CSV -> File contains all tracked performance data
+
+### Feature 5: Regression Detection Pipeline
+**Description**: Integrates with CI/CD pipelines and git workflows to automatically detect regressions by comparing current test results against historical baselines and failing builds when significant degradations occur.
+
+**Requirements**:
+- Store test results with git commit hashes and timestamps
+- Define regression thresholds for different types of changes
+- Generate baseline results from main branch or tagged versions
+- Provide clear regression reports with failure categorization
+- Support custom regression rules based on test criticality
+- Exit with appropriate codes for CI/CD integration
+
+**Test Steps**:
+1. Run tests and save baseline -> Results stored with current git commit
+2. Make breaking change and run tests -> Regression detected and reported
+3. Run in CI mode with failing tests -> Process exits with code 1
+4. Generate regression report -> Shows which tests regressed and severity
+
+## Data Models
+
+```python
+from pydantic import BaseModel, Field
+from typing import List, Dict, Optional, Union, Any
+from datetime import datetime
+from enum import Enum
+
+class ExpectationType(str, Enum):
+    EXACT = "exact"
+    REGEX = "regex"
+    SEMANTIC = "semantic"
+    CUSTOM = "custom"
+
+class TestMetadata(BaseModel):
+    name: str
+    description: Optional[str] = None
+    tags: List[str] = Field(default_factory=list)
+    timeout: int = 30
+    retries: int = 0
+    critical: bool = False
+    cost_threshold: Optional[float] = None
+
+class Expectation(BaseModel):
+    type: ExpectationType
+    value: str
+    threshold: Optional[float] = None
+    custom_function: Optional[str] = None
+
+class ConversationTurn(BaseModel):
+    role: str  # "user" or "assistant"
+    content: str
+    tool_calls: List[Dict[str, Any]] = Field(default_factory=list)
+    resources: List[str] = Field(default_factory=list)
+
+class TestCase(BaseModel):
+    metadata: TestMetadata
+    conversation: List[ConversationTurn]
+    expectations: List[Expectation]
+    setup_commands: List[str] = Field(default_factory=list)
+    teardown_commands: List[str] = Field(default_factory=list)
+
+class TokenUsage(BaseModel):
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+
+class PerformanceMetrics(BaseModel):
+    response_time_ms: int
+    tool_execution_time_ms: int
+    total_time_ms: int
+    token_usage: TokenUsage
+    estimated_cost_usd: float
+
+class ComparisonResult(BaseModel):
+    passed: bool
+    confidence: float
+    diff: Optional[str] = None
+    similarity_score: Optional[float] = None
+    error_message: Optional[str] = None
+
+class TestResult(BaseModel):
+    test_case_path: str
+    test_name: str
+    timestamp: datetime
+    git_commit: Optional[str] = None
+    agent_response: str
+    comparison_results: List[ComparisonResult]
+    performance_metrics: PerformanceMetrics
+    tool_calls_made: List[Dict[str, Any]] = Field(default_factory=list)
+    resources_accessed: List[str] = Field(default_factory=list)
+    execution_trace: List[Dict[str, Any]] = Field(default_factory=list)
+    passed: bool
+    error: Optional[str] = None
+
+class TestSuiteResult(BaseModel):
+    suite_name: str
+    timestamp: datetime
+    git_commit: Optional[str] = None
+    total_tests: int
+    passed_tests: int
+    failed_tests: int
+    total_cost_usd: float
+    total_time_ms: int
+    results: List[TestResult]
+    regression_detected: bool = False
+    baseline_commit: Optional[str] = None
+
+class MCPEvalConfig(BaseModel):
+    agent_endpoint: str
+    agent_type: str  # "websocket", "stdio", "http"
+    test_directories: List[str] = Field(default=["./tests"])
+    output_directory: str = "./eval-results"
+    parallel_limit: int = 5
+    default_timeout: int = 30
+    cost_models: Dict[str, Dict[str, float]] = Field(default_factory=dict)
+    regression_thresholds: Dict[str, float] = Field(default_factory=dict)
+    baseline_strategy: str = "main_branch"  # "main_branch", "last_tag", "manual"
+```
+
+## File Structure
+
+```
+mcp-eval-harness/
+├── src/
+│   └── mcp_eval/
+│       ├── __init__.py
+│       ├── cli.py                 # Main CLI entry point
+│       ├── config.py              # Configuration management
+│       ├── models.py              # Pydantic data models
+│       ├── parser/
+│       │   ├── __init__.py
+│       │   ├── markdown.py        # Markdown test case parsing
+│       │   └── yaml_validator.py  # YAML frontmatter validation
+│       ├── executor/
+│       │   ├── __init__.py
+│       │   ├── mcp_client.py      # MCP protocol client
+│       │   ├── test_runner.py     # Test execution engine
+│       │   └── parallel.py        # Concurrent execution
+│       ├── comparison/
+│       │   ├── __init__.py
+│       │   ├── exact.py           # Exact string matching
+│       │   ├── regex.py           # Regex pattern matching
+│       │   ├── semantic.py        # Semantic similarity
+│       │   └── custom.py          # Custom evaluation functions
+│       ├── reporting/
+│       │   ├── __init__.py
+│       │   ├── console.py         # Rich console output
+│       │   ├── html.py            # HTML report generation
+│       │   ├── json.py            # JSON export
+│       │   └── regression.py      # Regression analysis
+│       ├── storage/
+│       │   ├── __init__.py
+│       │   ├── sqlite.py          # SQLite result storage
+│       │   └── filesystem.py      # File-based storage
+│       └── server/
+│           ├── __init__.py
+│           ├── mcp_server.py      # MCP server implementation
+│           └── handlers.py        # Request handlers
+├── tests/
+│   ├── unit/
+│   │   ├── test_parser.py
+│   │   ├── test_executor.py
+│   │   ├── test_comparison.py
+│   │   └── test_models.py
+│   ├── integration/
+│   │   ├── test_cli.py
+│   │   ├── test_end_to_end.py
+│   │   └── fixtures/
+│   │       ├── sample_tests/
+│   │       │   ├── basic_prompt.md
+│   │       │   ├── multi_turn.md
+│   │       │   └── tool_usage.md
+│   │       └── mock_agent.py
+│   └── examples/
+│       ├── coding_agent_tests/
+│       │   ├── python_generation.md
+│       │   ├── code_review.md
+│       │   └── debugging_help.md
+│       ├── workflow_tests/
+│       │   ├── email_processing.md
+│       │   └── data_analysis.md
+│       └── mcp-eval.yaml
+├── docs/
+│   ├── test_case_format.md
+│   ├── mcp_integration.md
+│   ├── ci_cd_setup.md
+│   └── examples/
+├── pyproject.toml
+├── requirements.txt
+├── README.md
+├── LICENSE
+└── init.sh
+```
+
+## Success Criteria
+
+1. **Markdown Test Case Parsing**: Successfully parse 100% of valid markdown test cases with YAML frontmatter, extracting metadata, conversation flows, and expectations without data loss.
+
+2. **MCP Protocol Integration**: Establish stable connections to MCP servers via WebSocket and stdio, exchange protocol messages correctly, and handle tool calls and resource requests during test execution.
+
+3. **Multi-Strategy Comparison**: Implement exact, regex, and semantic similarity comparison methods with configurable thresholds, generating clear diffs and confidence scores for each comparison type.
+
+4. **Performance Tracking**: Accurately track token usage, response times, and estimated costs across test runs, with the ability to export metrics data and generate performance comparison reports.
+
+5. **Regression Detection**: Detect regressions by comparing current test results against stored baselines, with configurable thresholds and clear reporting of which tests failed and why.
+
+6. **CLI Usability**: Provide a complete CLI interface that can run individual tests, entire suites, generate reports, and integrate with CI/CD pipelines using standard exit codes.
+
+7. **Parallel Execution**: Execute multiple tests concurrently with configurable limits, maintaining test isolation and providing progress indicators for long-running test suites.
+
+8. **MCP Server Mode**: Serve test results and historical data via MCP protocol, allowing other tools to query test history, export data, and integrate evaluation results into larger workflows.
+
+## Constraints & Notes
+
+- The tool must work with any MCP-compatible agent without requiring agent-specific modifications or configurations
+- Test execution should be deterministic where possible, with clear handling and reporting of non-deterministic behaviors
+- The SQLite database should remain lightweight and not require additional database server setup
+- All async operations must include proper timeout handling and resource cleanup
+- The CLI should provide rich, colorized output by default but support plain text mode for CI environments
+- Configuration should be possible via both YAML files and environment variables, with environment variables taking precedence
+- The tool should gracefully handle network failures, agent crashes, and malformed responses without corrupting stored test results
+- Memory usage should remain bounded even when running large test suites with detailed execution traces
+- The markdown test case format should be intuitive enough for non-technical stakeholders to write and review

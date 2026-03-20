@@ -1,0 +1,57 @@
+CRITICAL SECURITY FIXES - COMPLETED
+====================================
+
+ISSUE: Arbitrary Code Execution via eval() in custom.py
+-------------------------------------------------------
+The custom comparator used eval() with a restricted namespace, which could be bypassed using
+type introspection attacks like: type.__bases__[0].__subclasses__() to access subprocess.Popen
+
+FIX APPLIED:
+1. Replaced eval() sandbox with AST-based validation
+2. Parse expressions into Abstract Syntax Tree
+3. Walk AST and reject unsafe node types BEFORE execution
+4. Block ALL dunder attribute access (prevents __bases__, __subclasses__, etc.)
+5. Block dangerous builtins (getattr, exec, eval, compile, open, __import__)
+6. Maximum expression nesting depth (20)
+7. Empty __builtins__ dict (not just restricted)
+8. Only explicitly whitelisted safe functions available
+
+SECURITY TESTS PASSED:
+- Type introspection attack: BLOCKED
+- __import__ bypass: BLOCKED  
+- getattr bypass: BLOCKED
+- exec call: BLOCKED
+- eval call: BLOCKED
+- compile call: BLOCKED
+- Dunder attribute access: BLOCKED
+
+Safe expressions still work:
+- String comparisons: PASS
+- Length checks: PASS
+- Numeric comparisons: PASS
+- String methods: PASS
+
+ADDITIONAL FIXES:
+-----------------
+2. Input Size Limits (1MB for most comparators, 100KB for regex to prevent ReDoS)
+   - Applied to: custom.py, exact.py, regex.py, semantic.py
+   - All comparators now reject inputs exceeding size limits
+
+FILES MODIFIED:
+--------------
+src/mcp_eval/comparison/custom.py - Complete rewrite with AST validation
+src/mcp_eval/comparison/exact.py - Added input size limit
+src/mcp_eval/comparison/regex.py - Added input size limit (100KB)
+src/mcp_eval/comparison/semantic.py - Added input size limit
+
+BACKWARD COMPATIBILITY:
+----------------------
+All existing functionality preserved:
+- Feature 1 (Markdown parser): WORKING
+- Feature 3 (Comparison engine): WORKING
+  - EXACT comparison: WORKING
+  - REGEX comparison: WORKING
+  - SEMANTIC comparison: WORKING
+  - CUSTOM comparison: WORKING (now secure)
+
+NO BREAKING CHANGES - All tests pass

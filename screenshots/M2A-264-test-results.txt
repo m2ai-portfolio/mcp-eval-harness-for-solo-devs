@@ -1,0 +1,64 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    MCP EVAL HARNESS - FEATURE 3 TESTS                        ║
+║               Intelligent Result Comparison (M2A-264)                        ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+TEST STEP 1: Compare identical outputs
+--------------------------------------------------------------------------------
+Expected: "Hello, World!"
+Actual:   "Hello, World!"
+Result:   ✓ PASS with 100% confidence
+Status:   SUCCESS - Identical outputs pass with 100% confidence
+
+TEST STEP 2: Compare with minor formatting differences
+--------------------------------------------------------------------------------
+Expected: "Hello, Earth!"
+Actual:   "Hello, World!"
+Result:   ✗ FAIL with 69.2% similarity
+Diff shown: YES
+Status:   SUCCESS - Differences shown in diff
+
+TEST STEP 3: Regex pattern matching
+--------------------------------------------------------------------------------
+Expected: r"Hello, \w+"
+Actual:   "Hello, World"
+Result:   ✓ PASS - Pattern matches
+Status:   SUCCESS - Regex pattern matched successfully
+
+TEST STEP 4: Semantic similarity above threshold
+--------------------------------------------------------------------------------
+Expected: "A cat was sitting on the mat"
+Actual:   "The cat sat on the mat"
+Result:   ✓ PASS - Similarity score: 63.20%
+Threshold: 50%
+Status:   SUCCESS - Semantic similarity above threshold
+
+ADDITIONAL FEATURE TESTS
+================================================================================
+
+BONUS: Regex with named capture groups
+--------------------------------------------------------------------------------
+Pattern: r"Temperature is (?P<temp>\d+)(?P<unit>[FC])"
+Actual:  "Temperature is 72F"
+Result:  ✓ PASS
+Captured groups:
+    temp: '72'
+    unit: 'F'
+
+BONUS: Custom evaluation function
+--------------------------------------------------------------------------------
+Function: len(actual) > 5 and "World" in actual
+Actual:   "Hello World"
+Result:   ✓ PASS
+Details:  Custom function returned: True
+
+SECURITY: Invalid operations blocked
+--------------------------------------------------------------------------------
+Function: __import__("os").system("ls")
+Result:   ✓ BLOCKED
+Error:    Security error: name '__import__' is not defined - imports a...
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                         ALL TEST STEPS PASSED!                            ║
+║                    Feature 3 is fully implemented                           ║
+╚══════════════════════════════════════════════════════════════════════════════╝

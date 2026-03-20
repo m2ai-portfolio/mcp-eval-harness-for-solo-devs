@@ -1,0 +1,46 @@
+============================================================
+FEATURE 3 REGRESSION TESTS - Comparison Module
+============================================================
+
+[Test 1] Exact match with identical outputs
+✓ PASS: Exact match works with score=1.0
+  Details: Exact match
+
+[Test 2] Exact match with differences - shows diff
+✓ PASS: Diff generated, score=0.69
+  Diff preview: Similarity: 69.23%
+
+Diff:
+--- expected+++ actual@@ -1 +1 @@-Hello, Earth!+Hello, World!...
+
+[Test 3] Regex pattern matching
+✓ PASS: Regex matched successfully
+  Details: Pattern matched (fullmatch)
+
+[Test 4] Semantic similarity
+✓ PASS: Semantic similarity score=0.63 (above 0.5 threshold)
+  Details: Sequence similarity: 72.00%
+Token overlap (Jaccard): 50.00%
+Combined score: 63.20%
+Threshold: 50.00%
+Result: PASS
+
+Common tokens (4): cat, mat, on, the
+Missing tokens (3): a, sitting, was
+Extra tokens
+
+[Test 5] Custom comparison with security validation
+✓ PASS: Custom works, attacks blocked
+  Safe result: Custom function returned: True
+  Security error: Unsafe expression: Access to private/dunder attribute '__subclasses__' is not allowed...
+
+============================================================
+FEATURE 3 SUMMARY
+============================================================
+Test 1 (Exact match): PASS
+Test 2 (Diff generation): PASS
+Test 3 (Regex): PASS
+Test 4 (Semantic): PASS
+Test 5 (Custom/Security): PASS
+
+Feature 3 Overall: PASS

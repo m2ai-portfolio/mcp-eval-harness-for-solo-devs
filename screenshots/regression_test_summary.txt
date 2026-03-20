@@ -1,0 +1,131 @@
+============================================================
+REGRESSION TEST REPORT - MCP EVAL HARNESS
+Feature 3: Intelligent Result Comparison
+============================================================
+Test Date: 2026-03-20
+Working Directory: /home/apexaipc/projects/yce-harness/generations/metroplex-ideaforge-116
+Environment: Python 3.12 with venv activated
+
+============================================================
+FEATURE 3 TESTS - COMPARISON MODULE (NEW)
+============================================================
+
+[Test 1] Exact Match - Identical Outputs
+Status: PASS
+Description: Verify exact string matching with 100% confidence
+Result: Score=1.0, Details="Exact match"
+
+[Test 2] Exact Match - With Differences
+Status: PASS
+Description: Verify diff generation when strings don't match
+Result: Score=0.69 (69.23% similarity), Unified diff generated
+Details: Successfully generated unified diff showing differences
+
+[Test 3] Regex Pattern Matching
+Status: PASS
+Description: Verify regex pattern matching capability
+Pattern: r'Hello, \w+'
+Input: 'Hello, World'
+Result: Score=1.0, Pattern matched (fullmatch)
+
+[Test 4] Semantic Similarity
+Status: PASS
+Description: Verify semantic similarity comparison
+Input: 'The cat sat on the mat'
+Expected: 'A cat was sitting on the mat'
+Threshold: 0.5
+Result: Score=0.63 (63.20% combined score)
+- Sequence similarity: 72.00%
+- Token overlap (Jaccard): 50.00%
+- Common tokens: cat, mat, on, the
+- Result: PASS (above threshold)
+
+[Test 5] Custom Comparison with Security
+Status: PASS
+Description: Verify custom expressions work with security validation
+Safe Expression: 'len(actual) > 5'
+Result: PASS, Custom function returned True
+
+Security Test: Attempted attack blocked
+Attack Expression: 'type.__bases__[0].__subclasses__()'
+Result: BLOCKED
+Error: "Unsafe expression: Access to private/dunder attribute '__subclasses__' is not allowed"
+
+============================================================
+REGRESSION TESTS - FEATURES 1 & 2 (EXISTING)
+============================================================
+
+[Test 6] Feature 1 - Markdown Parser
+Status: PASS
+Description: Verify markdown test case parser still works
+Tests Parsed:
+- Basic test: 'Basic Prompt Test' with 1 turn
+- Multi-turn test: 4 turns
+Result: Both test cases parsed successfully
+
+[Test 7] Feature 2 - Test Executor
+Status: PASS
+Description: Verify test execution engine still works
+Test Executed: 'QA Verify'
+Execution Time: 10ms
+Performance Metrics: Available
+Result: Test executor functioning correctly in mock mode
+
+============================================================
+OVERALL SUMMARY
+============================================================
+
+Feature 3 (NEW): PASS
+  - Test 1 (Exact match): PASS
+  - Test 2 (Diff generation): PASS
+  - Test 3 (Regex): PASS
+  - Test 4 (Semantic): PASS
+  - Test 5 (Custom/Security): PASS
+
+Regression (Existing Features): PASS
+  - Test 6 (Feature 1 - Parser): PASS
+  - Test 7 (Feature 2 - Executor): PASS
+
+Total Tests: 7
+Passed: 7
+Failed: 0
+
+REGRESSION TEST RESULT: PASS
+
+============================================================
+ISSUES FOUND
+============================================================
+
+None - All tests passed successfully.
+
+============================================================
+SERVER STATUS
+============================================================
+
+Dev Server: Not required (library-only tests)
+Python Environment: venv activated
+Dependencies: All installed and working
+
+============================================================
+KEY FINDINGS
+============================================================
+
+1. Feature 3 Implementation Complete
+   - All comparison types working correctly
+   - Security validation effective (blocked dunder attack)
+   - Diff generation functional
+   - Semantic similarity using token overlap
+
+2. No Regressions Detected
+   - Feature 1 (Parser) continues to work
+   - Feature 2 (Executor) continues to work
+   - No breaking changes introduced
+
+3. Code Quality
+   - AST-based security validation in custom comparisons
+   - Proper error handling throughout
+   - Good separation of concerns
+
+============================================================
+END OF REPORT
+============================================================

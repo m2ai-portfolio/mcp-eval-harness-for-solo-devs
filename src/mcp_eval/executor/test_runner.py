@@ -159,23 +159,28 @@ class TestRunner:
                 tool_execution_time_ms=tool_execution_time_ms,
             )
 
-            # For now, create a simple comparison result (actual comparison is Feature 3)
+            # Compare agent response against expectations using Feature 3
             comparison_results = []
+            all_passed = True
+
             if test_case.expectations:
-                comparison_results.append(
-                    ComparisonResult(
-                        passed=True,  # Placeholder
-                        expectation_type=test_case.expectations[0].type,
-                        expected=test_case.expectations[0].value,
-                        actual=agent_response,
-                        score=1.0,
-                        details="Comparison not yet implemented (Feature 3)",
-                    )
-                )
+                from ..comparison import compare_result
+
+                for expectation in test_case.expectations:
+                    comparison = compare_result(agent_response, expectation)
+                    comparison_results.append(comparison)
+
+                    if not comparison.passed:
+                        all_passed = False
+
+            # Determine overall test status
+            test_status = "passed" if all_passed and not error_message else "failed"
+            if error_message:
+                test_status = "error"
 
             return TestResult(
                 test_name=test_case.metadata.name,
-                status="passed" if not error_message else "error",
+                status=test_status,
                 comparison_results=comparison_results,
                 performance=performance,
                 error_message=error_message,

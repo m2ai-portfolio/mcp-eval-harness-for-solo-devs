@@ -1,0 +1,22 @@
+============================================================
+REGRESSION TESTS - Features 1 & 2
+============================================================
+
+[Test 6] Feature 1 - Markdown Parser
+✓ PASS: Feature 1 parser works
+  - Basic test: 'Basic Prompt Test' with 1 turn(s)
+  - Multi-turn test: 4 turns
+
+[Test 7] Feature 2 - Test Executor
+✓ PASS: Feature 2 executor works
+  - Test name: 'QA Verify'
+  - Execution time: 10ms
+  - Status: failed
+
+============================================================
+REGRESSION SUMMARY
+============================================================
+Test 6 (Feature 1 - Parser): PASS
+Test 7 (Feature 2 - Executor): PASS
+
+Regression Tests Overall: PASS

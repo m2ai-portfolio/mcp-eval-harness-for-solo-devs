@@ -13,6 +13,8 @@ from .parser.yaml_validator import YAMLValidationError
 from .parser.markdown import MarkdownParseError
 from .config import load_config, ConfigError
 from .executor import MCPClient, TestRunner, ParallelExecutor
+from .comparison import compare_result
+from .models import Expectation, ExpectationType
 
 console = Console()
 
@@ -297,6 +299,63 @@ def run(path: str, config: str, parallel: bool, parallel_limit: int, timeout: in
         raise click.Abort()
     except Exception as e:
         console.print(f"[red]✗ Unexpected error:[/red] {str(e)}", style="bold")
+        import traceback
+        console.print(traceback.format_exc())
+        raise click.Abort()
+
+
+@cli.command()
+@click.option("--actual", required=True, help="Actual output to compare")
+@click.option("--expected", required=True, help="Expected output or pattern")
+@click.option("--type", "comparison_type", type=click.Choice(['exact', 'regex', 'semantic', 'custom']), default='exact', help="Comparison type")
+@click.option("--threshold", type=float, help="Threshold for semantic comparison (0.0-1.0)")
+@click.option("--custom-function", help="Custom Python evaluation function")
+def compare(actual: str, expected: str, comparison_type: str, threshold: float, custom_function: str):
+    """
+    Compare actual output against expected using different strategies.
+
+    Examples:
+        mcp-eval compare --actual "Hello, World" --expected "Hello, World" --type exact
+        mcp-eval compare --actual "Hello, World" --expected "Hello, \\w+" --type regex
+        mcp-eval compare --actual "The cat sat" --expected "A cat was sitting" --type semantic --threshold 0.5
+        mcp-eval compare --actual "Hello World" --expected "test" --type custom --custom-function "len(actual) > 5"
+    """
+    try:
+        # Create expectation
+        exp_type = ExpectationType(comparison_type)
+        expectation = Expectation(
+            type=exp_type,
+            value=expected,
+            threshold=threshold,
+            custom_function=custom_function
+        )
+
+        # Perform comparison
+        result = compare_result(actual, expectation)
+
+        # Display results
+        console.print(Panel(f"[bold cyan]Comparison Result: {comparison_type.upper()}[/bold cyan]"))
+
+        status_color = "green" if result.passed else "red"
+        status_symbol = "✓" if result.passed else "✗"
+
+        console.print(f"\n[bold]Status:[/bold] [{status_color}]{status_symbol} {'PASS' if result.passed else 'FAIL'}[/{status_color}]")
+
+        if result.score is not None:
+            console.print(f"[bold]Score:[/bold] {result.score:.2%}")
+
+        console.print(f"\n[bold]Expected:[/bold]")
+        console.print(Panel(expected, border_style="yellow"))
+
+        console.print(f"[bold]Actual:[/bold]")
+        console.print(Panel(actual, border_style="cyan"))
+
+        if result.details:
+            console.print(f"\n[bold]Details:[/bold]")
+            console.print(Panel(result.details, border_style="dim"))
+
+    except Exception as e:
+        console.print(f"[red]✗ Comparison error:[/red] {str(e)}", style="bold")
         import traceback
         console.print(traceback.format_exc())
         raise click.Abort()

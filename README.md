@@ -21,27 +21,48 @@ A lightweight Python CLI tool and MCP server providing regression testing for ag
    source venv/bin/activate
    ```
 
-2. Define test cases as markdown files in the `tests/examples/` directory:
+2. Define test cases as markdown files with YAML frontmatter:
    ```markdown
-   # Test Case: Calculator Agent
+   ---
+   name: Calculator Test
+   description: Test basic arithmetic
+   tags: [math, calculator]
+   timeout: 30
+   ---
 
-   ## Input
+   ## Prompt
    Calculate 2 + 2
 
-   ## Expected Output
+   ## Expected
+   <!-- type: exact -->
    4
    ```
 
-3. Run the eval harness:
+3. Parse and validate test cases:
    ```bash
-   python -m mcp_eval run tests/examples/
+   mcp-eval parse tests/examples/calculator.md
+   mcp-eval validate tests/examples/
    ```
 
-4. View results in `eval-results/` directory with diffs and cost breakdowns
+4. Run tests (future feature):
+   ```bash
+   mcp-eval run tests/examples/
+   ```
+
+5. View results in `eval-results/` directory with diffs and cost breakdowns
 
 ## Features
 
-- **Markdown Test Cases**: Define test cases in simple markdown format with inputs and expected outputs
+### Implemented (Feature 1)
+- **Markdown Test Case Parsing**: Define test cases with YAML frontmatter and markdown sections
+- **YAML Validation**: Comprehensive validation with helpful error messages
+- **Multi-turn Conversations**: Support for both single and multi-turn conversation definitions
+- **Multiple Expectation Types**: exact, regex, semantic similarity, and custom validators
+- **Template Variables**: Parameterized test cases with variable expansion
+- **Setup/Teardown Commands**: Pre and post-test command execution
+- **CLI Tools**: Parse and validate commands with rich terminal output
+
+### Coming Soon
 - **MCP Protocol Execution**: Execute tests against any MCP-compatible agent with full protocol support
 - **Intelligent Comparison**: Compare agent outputs against expected results with detailed diffs
 - **Cost Tracking**: Automatic cost calculation and tracking for API calls and token usage
